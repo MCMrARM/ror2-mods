@@ -18,7 +18,7 @@ namespace ChestItems {
 
     [BepInPlugin(ModGuid, "Chest Item Picker", "1.0.0")]
     [BepInDependency(MiniRpcPlugin.Dependency)]
-    public class MyPlugin : BaseUnityPlugin {
+    public class ChestItemsPlugin : BaseUnityPlugin {
 
         private const string ModGuid = "com.github.mcmrarm.chestitempicker";
 

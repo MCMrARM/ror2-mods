@@ -18,7 +18,7 @@ namespace TruePause {
 
     [BepInPlugin(ModGuid, "True Pause", "1.0.0")]
     [BepInDependency(MiniRpcPlugin.Dependency)]
-    public class MyPlugin : BaseUnityPlugin {
+    public class TruePausePlugin : BaseUnityPlugin {
 
         private const string ModGuid = "com.github.mcmrarm.truepause";
 
