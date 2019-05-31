@@ -1,18 +1,10 @@
 ﻿using BepInEx;
-using BepInEx.Logging;
-using LeTai.Asset.TranslucentImage;
 using MiniRpcLib;
 using MiniRpcLib.Action;
 using RoR2;
-using RoR2.UI;
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.UI;
-using UnityEngine.Events;
 
 namespace TruePause {
 
