@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChestItems", "ChestItems\Ch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TruePause", "TruePause\TruePause.csproj", "{05B61EB7-65F8-40FB-A965-C1063421BBFA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ItemCounters", "ItemCounters\ItemCounters.csproj", "{709392ED-56DC-434E-813F-764DEC9BEABA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{05B61EB7-65F8-40FB-A965-C1063421BBFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05B61EB7-65F8-40FB-A965-C1063421BBFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05B61EB7-65F8-40FB-A965-C1063421BBFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{709392ED-56DC-434E-813F-764DEC9BEABA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{709392ED-56DC-434E-813F-764DEC9BEABA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{709392ED-56DC-434E-813F-764DEC9BEABA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{709392ED-56DC-434E-813F-764DEC9BEABA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

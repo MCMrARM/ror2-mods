@@ -1,0 +1,10 @@
+{
+    "name": "ItemCounters",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/MCMrARM/ror2-mods",
+    "description": "Lets you know how many items each player has",
+    "dependencies": [
+        "bbepis-BepInExPack-2.0.0",
+        "tristanmcpherson-R2API-2.0.10"
+    ]
+}
