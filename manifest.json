@@ -5,6 +5,7 @@
     "description": "Pick what items you get from chests",
     "dependencies": [
         "bbepis-BepInExPack-2.0.0",
+        "tristanmcpherson-R2API-2.0.10",
         "wildbook-MiniRpcLib-0.0.1"
     ]
 }
