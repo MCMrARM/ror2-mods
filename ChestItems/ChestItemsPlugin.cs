@@ -16,7 +16,7 @@ using UnityEngine.Events;
 
 namespace ChestItems {
 
-    [BepInPlugin(ModGuid, "Chest Item Picker", "1.1.0")]
+    [BepInPlugin(ModGuid, "Chest Item Picker", "1.1.1")]
     [BepInDependency(MiniRpcPlugin.Dependency)]
     public class ChestItemsPlugin : BaseUnityPlugin {
 
@@ -37,10 +37,13 @@ namespace ChestItems {
             On.RoR2.ChestBehavior.Start += (orig, self) => {
                 orig(self);
                 // By default the listener list contains: [0]PurchaseInteraction.SetAvailable(false) and [1]ChestBehavior.Open()
-                self.GetComponent<PurchaseInteraction>().onPurchase.SetPersistentListenerState(1, UnityEventCallState.Off);
-                self.GetComponent<PurchaseInteraction>().onPurchase.AddListener((v) => {
+                var purchaseInteraction = self.GetComponent<PurchaseInteraction>();
+                DisablePersistentListener(purchaseInteraction.onPurchase, self, "ItemDrop"); // Rusty Lockbox
+                DisablePersistentListener(purchaseInteraction.onPurchase, self, "Open");
+                purchaseInteraction.onPurchase.AddListener((v) => {
                     var generatedPickup = (PickupIndex)chestBehaviorDropPickupMember.GetValue(self);
-                    HandlePurchaseInteraction(v, self, generatedPickup);
+                    if (!HandlePurchaseInteraction(v, self, generatedPickup))
+                        self.Open();
                 });
             };
             On.RoR2.ShopTerminalBehavior.Start += (orig, self) => {
@@ -49,16 +52,34 @@ namespace ChestItems {
                 if (!self.Networkhidden)
                     return;
                 // By default the listener list contains: [0]PurchaseInteraction.SetAvailable(false), [1]ShopTerminalBehavior.DropPickup(), [2]ShopTerminalBehavior.SetNoPickup()
-                self.GetComponent<PurchaseInteraction>().onPurchase.SetPersistentListenerState(1, UnityEventCallState.Off);
-                self.GetComponent<PurchaseInteraction>().onPurchase.SetPersistentListenerState(2, UnityEventCallState.Off);
-                self.GetComponent<PurchaseInteraction>().onPurchase.AddListener((v) => {
-                    HandlePurchaseInteraction(v, self, generatedPickup);
+                var purchaseInteraction = self.GetComponent<PurchaseInteraction>();
+                DisablePersistentListener(purchaseInteraction.onPurchase, self, "DropPickup");
+                DisablePersistentListener(purchaseInteraction.onPurchase, self, "SetNoPickup");
+                purchaseInteraction.onPurchase.AddListener((v) => {
+                    if (!HandlePurchaseInteraction(v, self, generatedPickup)) {
+                        self.DropPickup();
+                        self.SetNoPickup();
+                    }
                 });
             };
             On.RoR2.MultiShopController.CreateTerminals += (orig, self) => {
                 orig(self);
                 HandlePostCreateMultiShopTerminals(self);
             };
+        }
+
+        private static int FindPersistentListener(UnityEventBase ev, UnityEngine.Object target, string methodName) {
+            for (int i = 0; i < ev.GetPersistentEventCount(); i++) {
+                if (ev.GetPersistentTarget(i) == target && ev.GetPersistentMethodName(i) == methodName)
+                    return i;
+            }
+            return -1;
+        }
+
+        private static void DisablePersistentListener(UnityEventBase ev, UnityEngine.Object target, string methodName) {
+            int index = FindPersistentListener(ev, target, methodName);
+            if (index != -1)
+                ev.SetPersistentListenerState(index, UnityEventCallState.Off);
         }
 
         private List<PickupIndex> GetAvailablePickups(PickupIndex generatedPickup) {
@@ -85,12 +106,15 @@ namespace ChestItems {
             return availablePickups;
         }
 
-        private void HandlePurchaseInteraction(Interactor interactor, NetworkBehaviour ctr, PickupIndex generatedPickup) {
+        private bool HandlePurchaseInteraction(Interactor interactor, NetworkBehaviour ctr, PickupIndex generatedPickup) {
             var user = interactor.GetComponent<CharacterBody>()?.master?.GetComponent<PlayerCharacterMasterController>()?.networkUser;
             if (user == null)
-                return;
+                return false;
             List<PickupIndex> pickups = GetAvailablePickups(generatedPickup);
+            if (pickups.Count == 0)
+                return false;
             CallNetShowItemPicker(user, ctr.netId, pickups);
+            return true;
         }
 
         private void HandlePostCreateMultiShopTerminals(MultiShopController multiShop) {
@@ -261,6 +285,8 @@ namespace ChestItems {
             var chest = chestNetId.GetComponent<ChestBehavior>();
             if (chest != null) {
                 chestBehaviorDropPickupMember.SetValue(chest, selectedPickup);
+                if (FindPersistentListener(chest.GetComponent<PurchaseInteraction>().onPurchase, chest, "ItemDrop") != -1) // Rusty Lockbox
+                    chest.ItemDrop();
                 chest.Open();
             }
             var terminal = chestNetId.GetComponent<ShopTerminalBehavior>();
