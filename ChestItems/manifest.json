@@ -1,7 +1,7 @@
 {
     "name": "ChestItemPicker",
     "version_number": "1.0.0",
-    "website_url": "https://github.com/MCMrARM/ror2-chestitempicker",
+    "website_url": "https://github.com/MCMrARM/ror2-mods",
     "description": "Pick what items you get from chests",
     "dependencies": [
         "bbepis-BepInExPack-2.0.0",
