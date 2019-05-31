@@ -1,6 +1,6 @@
 {
     "name": "ItemCounters",
-    "version_number": "1.0.0",
+    "version_number": "1.0.1",
     "website_url": "https://github.com/MCMrARM/ror2-mods",
     "description": "Lets you know how many items each player has",
     "dependencies": [
