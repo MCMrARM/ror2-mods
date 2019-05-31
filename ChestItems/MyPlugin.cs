@@ -24,6 +24,7 @@ namespace ChestItems {
 
         private static FieldInfo chestBehaviorDropPickupMember = typeof(ChestBehavior).GetField("dropPickup", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo shopTerminalBehaviorPickupIndexMember = typeof(ShopTerminalBehavior).GetField("pickupIndex", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo multiShopControllerGameObjectsMember = typeof(MultiShopController).GetField("terminalGameObjects", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private IRpcAction<Action<NetworkWriter>> NetShowItemPickerAction;
         private IRpcAction<Action<NetworkWriter>> NetItemPickedAction;
@@ -53,6 +54,20 @@ namespace ChestItems {
                 self.GetComponent<PurchaseInteraction>().onPurchase.AddListener((v) => {
                     HandlePurchaseInteraction(v, self, generatedPickup);
                 });
+            };
+            On.RoR2.MultiShopController.CreateTerminals += (orig, self) => {
+                orig(self);
+                // Show items from all terminals except for one
+                GameObject[] objects = (GameObject[])multiShopControllerGameObjectsMember.GetValue(self);
+                GameObject hidden = null;
+                foreach (GameObject o in objects) {
+                    if (o.GetComponent<ShopTerminalBehavior>().Networkhidden)
+                        hidden = o;
+                }
+                if (hidden == null)
+                    hidden = Run.instance.treasureRng.NextElementUniform<GameObject>(objects);
+                foreach (GameObject o in objects)
+                    o.GetComponent<ShopTerminalBehavior>().Networkhidden = (o == hidden);
             };
         }
 
