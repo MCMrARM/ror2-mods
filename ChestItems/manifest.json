@@ -1,6 +1,6 @@
 {
     "name": "ChestItemPicker",
-    "version_number": "1.0.0",
+    "version_number": "1.1.0",
     "website_url": "https://github.com/MCMrARM/ror2-mods",
     "description": "Pick what items you get from chests",
     "dependencies": [

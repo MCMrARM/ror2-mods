@@ -16,7 +16,7 @@ using UnityEngine.Events;
 
 namespace ChestItems {
 
-    [BepInPlugin(ModGuid, "Chest Item Picker", "1.0.0")]
+    [BepInPlugin(ModGuid, "Chest Item Picker", "1.1.0")]
     [BepInDependency(MiniRpcPlugin.Dependency)]
     public class ChestItemsPlugin : BaseUnityPlugin {
 
