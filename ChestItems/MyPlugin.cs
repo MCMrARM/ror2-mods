@@ -16,6 +16,7 @@ using UnityEngine.UI;
 namespace ChestItems {
 
     [BepInPlugin(ModGuid, "Chest Item Picker", "1.0.0")]
+    [BepInDependency("dev.wildbook.libminirpc")]
     public class MyPlugin : BaseUnityPlugin {
 
         private const string ModGuid = "com.github.mcmrarm.chestitempicker";
