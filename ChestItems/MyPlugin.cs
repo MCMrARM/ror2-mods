@@ -12,6 +12,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 namespace ChestItems {
 
@@ -22,6 +23,7 @@ namespace ChestItems {
         private const string ModGuid = "com.github.mcmrarm.chestitempicker";
 
         private static FieldInfo chestBehaviorDropPickupMember = typeof(ChestBehavior).GetField("dropPickup", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo shopTerminalBehaviorPickupIndexMember = typeof(ShopTerminalBehavior).GetField("pickupIndex", BindingFlags.NonPublic | BindingFlags.Instance);
 
         private IRpcAction<Action<NetworkWriter>> NetShowItemPickerAction;
         private IRpcAction<Action<NetworkWriter>> NetItemPickedAction;
@@ -34,20 +36,28 @@ namespace ChestItems {
             On.RoR2.ChestBehavior.Start += (orig, self) => {
                 orig(self);
                 // By default the listener list contains: [0]PurchaseInteraction.SetAvailable(false) and [1]ChestBehavior.Open()
-                self.GetComponent<PurchaseInteraction>().onPurchase.SetPersistentListenerState(1, UnityEngine.Events.UnityEventCallState.Off);
+                self.GetComponent<PurchaseInteraction>().onPurchase.SetPersistentListenerState(1, UnityEventCallState.Off);
                 self.GetComponent<PurchaseInteraction>().onPurchase.AddListener((v) => {
-                    var user = v.GetComponent<CharacterBody>()?.master?.GetComponent<PlayerCharacterMasterController>()?.networkUser;
-                    if (user == null)
-                        return;
-                    List<PickupIndex> pickups = GetAvailablePickups(self);
-                    CallNetShowItemPicker(user, self.netId, pickups);
+                    var generatedPickup = (PickupIndex)chestBehaviorDropPickupMember.GetValue(self);
+                    HandlePurchaseInteraction(v, self, generatedPickup);
+                });
+            };
+            On.RoR2.ShopTerminalBehavior.Start += (orig, self) => {
+                orig(self);
+                var generatedPickup = self.NetworkpickupIndex;
+                if (!self.Networkhidden)
+                    return;
+                // By default the listener list contains: [0]PurchaseInteraction.SetAvailable(false), [1]ShopTerminalBehavior.DropPickup(), [2]ShopTerminalBehavior.SetNoPickup()
+                self.GetComponent<PurchaseInteraction>().onPurchase.SetPersistentListenerState(1, UnityEventCallState.Off);
+                self.GetComponent<PurchaseInteraction>().onPurchase.SetPersistentListenerState(2, UnityEventCallState.Off);
+                self.GetComponent<PurchaseInteraction>().onPurchase.AddListener((v) => {
+                    HandlePurchaseInteraction(v, self, generatedPickup);
                 });
             };
         }
 
-        private List<PickupIndex> GetAvailablePickups(ChestBehavior chest) {
+        private List<PickupIndex> GetAvailablePickups(PickupIndex generatedPickup) {
             var availablePickups = new List<PickupIndex>();
-            var generatedPickup = (PickupIndex)chestBehaviorDropPickupMember.GetValue(chest);
             if (generatedPickup.itemIndex != ItemIndex.None) {
                 var tier = ItemCatalog.GetItemDef(generatedPickup.itemIndex).tier;
                 if (tier == ItemTier.Tier1 || tier == ItemTier.Tier2 || tier == ItemTier.Tier3)
@@ -68,6 +78,14 @@ namespace ChestItems {
                 }
             }
             return availablePickups;
+        }
+
+        private void HandlePurchaseInteraction(Interactor interactor, NetworkBehaviour ctr, PickupIndex generatedPickup) {
+            var user = interactor.GetComponent<CharacterBody>()?.master?.GetComponent<PlayerCharacterMasterController>()?.networkUser;
+            if (user == null)
+                return;
+            List<PickupIndex> pickups = GetAvailablePickups(generatedPickup);
+            CallNetShowItemPicker(user, ctr.netId, pickups);
         }
 
         private void ShowItemPicker(List<PickupIndex> availablePickups, ItemCallback cb) {
@@ -205,10 +223,18 @@ namespace ChestItems {
         private void NetItemPicked(NetworkUser user, NetworkReader reader) {
             var chestNetId = reader.ReadNetworkIdentity();
             var selectedPickup = PickupIndex.ReadFromNetworkReader(reader);
-
+            
             var chest = chestNetId.GetComponent<ChestBehavior>();
-            chestBehaviorDropPickupMember.SetValue(chest, selectedPickup);
-            chest.Open();
+            if (chest != null) {
+                chestBehaviorDropPickupMember.SetValue(chest, selectedPickup);
+                chest.Open();
+            }
+            var terminal = chestNetId.GetComponent<ShopTerminalBehavior>();
+            if (terminal != null) {
+                shopTerminalBehaviorPickupIndexMember.SetValue(terminal, selectedPickup);
+                terminal.DropPickup();
+                terminal.SetNoPickup();
+            }
         }
 
         [Client]
