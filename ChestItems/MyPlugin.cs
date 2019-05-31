@@ -57,17 +57,7 @@ namespace ChestItems {
             };
             On.RoR2.MultiShopController.CreateTerminals += (orig, self) => {
                 orig(self);
-                // Show items from all terminals except for one
-                GameObject[] objects = (GameObject[])multiShopControllerGameObjectsMember.GetValue(self);
-                GameObject hidden = null;
-                foreach (GameObject o in objects) {
-                    if (o.GetComponent<ShopTerminalBehavior>().Networkhidden)
-                        hidden = o;
-                }
-                if (hidden == null)
-                    hidden = Run.instance.treasureRng.NextElementUniform<GameObject>(objects);
-                foreach (GameObject o in objects)
-                    o.GetComponent<ShopTerminalBehavior>().Networkhidden = (o == hidden);
+                HandlePostCreateMultiShopTerminals(self);
             };
         }
 
@@ -101,6 +91,35 @@ namespace ChestItems {
                 return;
             List<PickupIndex> pickups = GetAvailablePickups(generatedPickup);
             CallNetShowItemPicker(user, ctr.netId, pickups);
+        }
+
+        private void HandlePostCreateMultiShopTerminals(MultiShopController multiShop) {
+            // Show items from all terminals except for one
+            GameObject[] objects = (GameObject[])multiShopControllerGameObjectsMember.GetValue(multiShop);
+            GameObject hidden = null;
+            foreach (GameObject o in objects) {
+                if (o.GetComponent<ShopTerminalBehavior>().Networkhidden)
+                    hidden = o;
+            }
+            if (hidden == null)
+                hidden = Run.instance.treasureRng.NextElementUniform<GameObject>(objects);
+            foreach (GameObject o in objects)
+                o.GetComponent<ShopTerminalBehavior>().Networkhidden = (o == hidden);
+
+            // Fix anim - Don't close the terminal we are picking the item from.
+            foreach (GameObject gameObject in objects) {
+                // Remove the .DisableAllTerminals listener and reimplement it
+                gameObject.GetComponent<PurchaseInteraction>().onPurchase.RemoveAllListeners();
+                gameObject.GetComponent<PurchaseInteraction>().onPurchase.AddListener((v) => {
+                    foreach (GameObject other in objects) {
+                        if (other == gameObject) // CHANGE: exclude the terminal we are opening
+                            continue;
+                        other.GetComponent<PurchaseInteraction>().Networkavailable = false;
+                        other.GetComponent<ShopTerminalBehavior>().SetNoPickup();
+                    }
+                    multiShop.Networkavailable = false;
+                });
+            }
         }
 
         private void ShowItemPicker(List<PickupIndex> availablePickups, ItemCallback cb) {
