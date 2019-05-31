@@ -1,0 +1,11 @@
+{
+    "name": "TruePause",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/MCMrARM/ror2-mods",
+    "description": "Actually pauses the game on multiplayer",
+    "dependencies": [
+        "bbepis-BepInExPack-2.0.0",
+        "tristanmcpherson-R2API-2.0.10",
+        "wildbook-MiniRpcLib-0.0.1"
+    ]
+}
