@@ -27,8 +27,7 @@ namespace ItemCounters {
                 int tier3Count = master.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
                 int lunarCount = master.inventory.GetTotalItemCountOfTier(ItemTier.Lunar);
                 int bossCount = master.inventory.GetTotalItemCountOfTier(ItemTier.Boss);
-                int noTierCount = master.inventory.GetTotalItemCountOfTier(ItemTier.NoTier);
-                int totalItemCount = tier1Count + tier2Count + tier3Count + lunarCount + bossCount + noTierCount;
+                int totalItemCount = tier1Count + tier2Count + tier3Count + lunarCount + bossCount;
 
                 StringBuilder sb = new StringBuilder();
                 sb.AppendFormat("<nobr><color=#fff>{0} (", totalItemCount);
